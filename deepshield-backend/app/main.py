@@ -20,9 +20,9 @@ app.add_middleware(
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Include routers
-app.include_router(users.router, prefix="/api/users", tags=["users"])
-app.include_router(content.router, prefix="/api/content", tags=["content"])
-app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+app.include_router(content.router, prefix="/api/v1/content", tags=["content"])
+app.include_router(ai.router, prefix="/api/v1/ai", tags=["ai"])
 
 @app.on_event("startup")
 async def startup_db_client():
