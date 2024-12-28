@@ -4,10 +4,9 @@ services:
     name: deepshield-backend
     env: python
     buildCommand: |
-      cd deepshield-backend
       python -m pip install --upgrade pip
       pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-      pip install -r requirements.txt
+      cd deepshield-backend && pip install -r requirements.txt
       mkdir -p /opt/render/project/src/datasets
       curl -L https://github.com/ondyari/FaceForensics/raw/master/dataset/FaceForensics++ -o /opt/render/project/src/datasets/faceforensics.zip
       curl -L https://github.com/notAI-tech/NudeNet/raw/v2/dataset/nude.zip -o /opt/render/project/src/datasets/nudenet.zip
