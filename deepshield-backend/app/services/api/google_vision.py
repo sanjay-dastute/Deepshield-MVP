@@ -3,12 +3,12 @@ Google Cloud Vision API integration for image analysis and OCR
 """
 from typing import Dict, Any, List
 import io
-from google.cloud import vision
+from .mock_vision import MockGoogleVisionAPI, Image, Likelihood
 from app.config import settings
 
 class GoogleVisionAPI:
     def __init__(self):
-        self.client = vision.ImageAnnotatorClient()
+        self.client = MockGoogleVisionAPI()
     
     async def detect_explicit_content(self, image_path: str) -> Dict[str, Any]:
         """Detect explicit content in an image using Google Vision API"""
@@ -16,17 +16,16 @@ class GoogleVisionAPI:
             with open(image_path, "rb") as image_file:
                 content = image_file.read()
             
-            image = vision.Image(content=content)
-            response = self.client.safe_search_detection(image=image)
-            safe_search = response.safe_search_annotation
+            image = Image(content=content)
+            safe_search = await self.client.detect_safe_search(image.content)
             
             # Convert likelihood to confidence score (0-1)
             likelihood_scores = {
-                vision.Likelihood.VERY_UNLIKELY: 0.0,
-                vision.Likelihood.UNLIKELY: 0.25,
-                vision.Likelihood.POSSIBLE: 0.5,
-                vision.Likelihood.LIKELY: 0.75,
-                vision.Likelihood.VERY_LIKELY: 1.0
+                "VERY_UNLIKELY": 0.0,
+                "UNLIKELY": 0.25,
+                "POSSIBLE": 0.5,
+                "LIKELY": 0.75,
+                "VERY_LIKELY": 1.0
             }
             
             details = {
@@ -58,14 +57,13 @@ class GoogleVisionAPI:
             with open(image_path, "rb") as image_file:
                 content = image_file.read()
             
-            image = vision.Image(content=content)
-            response = self.client.text_detection(image=image)
-            texts = response.text_annotations
+            image = Image(content=content)
+            text = await self.client.detect_text(image.content)
             
             return {
                 "success": True,
-                "text": texts[0].description if texts else "",
-                "language": texts[0].locale if texts else None,
+                "text": text,
+                "language": "en",  # Mock always returns English
                 "error": None
             }
         except Exception as e:
@@ -82,9 +80,8 @@ class GoogleVisionAPI:
             with open(image_path, "rb") as image_file:
                 content = image_file.read()
             
-            image = vision.Image(content=content)
-            response = self.client.face_detection(image=image)
-            faces = response.face_annotations
+            image = Image(content=content)
+            faces = await self.client.detect_faces(image.content) if hasattr(self.client, 'detect_faces') else []
             
             face_details = []
             for face in faces:

@@ -36,7 +36,7 @@ MOCK_LANGUAGE_DETECTION = {
 
 class TranslationAPI:
     def __init__(self):
-        self.api_key = settings.translation_api_key
+        self.api_key = settings.TRANSLATION_API_KEY
         self.base_url = "https://translation.googleapis.com/language/translate/v2"
     
     async def translate_text(self, text: str, target_lang: str = "en", source_lang: str = None) -> Dict[str, Any]:

@@ -13,8 +13,8 @@ async def get_database():
     return db.db
 
 async def connect_to_mongo():
-    db.client = AsyncIOMotorClient(settings.mongodb_url)
-    db.db = db.client[settings.mongodb_db]
+    db.client = AsyncIOMotorClient(settings.MONGODB_URL)
+    db.db = db.client[settings.MONGODB_DB]
 
 async def close_mongo_connection():
     db.client.close()
