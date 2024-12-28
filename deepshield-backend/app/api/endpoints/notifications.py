@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from ...core.security import get_current_user
 from ...models.user import User
 from ...services.notifications.email import EmailNotificationService
+from ...services.notifications.content_notifications import notify_content_flagged
 from ...services.notifications.sms import SMSNotificationService
 from ...services.notifications.websocket import WebSocketNotificationService
 
@@ -68,43 +69,22 @@ class NotificationRequest(BaseModel):
         extra = "allow"
 
 @router.post("/notify/content-flagged/{user_id}")
-async def notify_content_flagged(
+async def notify_content_flagged_endpoint(
     user_id: str,
     request: dict = Body(...),
     current_user: User = None  # Temporarily disable auth for testing
 ) -> JSONResponse:
     """Notify a user about flagged content."""
     notification = NotificationRequest(**request)
-    notification_type = "flagged_content"
     content_dict = notification.dict()
     
-    # Send notifications through all channels
-    email_sent = await email_service.send_notification(
-        user_id=user_id,
-        notification_type=notification_type,
-        content=content_dict
-    )
-    
-    sms_sent = await sms_service.send_notification(
-        user_id=user_id,
-        notification_type=notification_type,
-        content=content_dict
-    )
-    
-    websocket_sent = await websocket_service.send_notification(
-        user_id=user_id,
-        notification_type=notification_type,
-        content=content_dict
-    )
+    # Use the content notification service
+    channels = await notify_content_flagged(user_id, content_dict)
     
     return JSONResponse(
         content={
             "success": True,
-            "channels": {
-                "email": email_sent,
-                "sms": sms_sent,
-                "websocket": websocket_sent
-            }
+            "channels": channels
         }
     )
 
