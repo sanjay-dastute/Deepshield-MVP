@@ -3,7 +3,11 @@ import numpy as np
 import cv2
 from typing import Dict, Any
 from transformers import pipeline
+from hatesonar import Sonar
+from nudenet import NudeDetector
 from .keyword_blacklist import KeywordBlacklist
+import torch
+from datasets import load_dataset
 
 # Lazy import to avoid circular dependency
 def get_translation_api():
@@ -29,7 +33,7 @@ MOCK_TOXIC_CONTENT = {
 
 class ContentModerator:
     def __init__(self, test_mode: bool = False):
-        """Initialize content moderation service
+        """Initialize content moderation service with multiple models and datasets
         Args:
             test_mode (bool): If True, use mock responses for testing
         """
@@ -39,25 +43,39 @@ class ContentModerator:
             # Mock classifiers for testing
             self.nsfw_classifier = lambda x: [{'label': 'nsfw', 'score': 0.9}]
             self.text_classifier = lambda x: [{'label': 'toxic', 'score': 0.9}]
+            self.hate_sonar = None
+            self.nude_detector = None
         else:
             try:
-                # Initialize NSFW content detection
+                # Initialize NSFW content detection using NudeNet
+                self.nude_detector = NudeDetector()
+                
+                # Initialize NSFW classifier (NSFWJS model converted to PyTorch)
                 self.nsfw_classifier = pipeline(
                     "image-classification",
                     model="Falconsai/nsfw_image_detection",
                     device=-1  # CPU
                 )
                 
-                # Initialize text toxicity detection
+                # Initialize text toxicity detection with BERT
                 self.text_classifier = pipeline(
                     "text-classification",
                     model="unitary/multilingual-toxic-xlm-roberta",
                     device=-1  # CPU
                 )
+                
+                # Initialize HateSonar for additional hate speech detection
+                self.hate_sonar = Sonar()
+                
+                # Load HateXplain dataset for improved detection
+                self.hate_dataset = load_dataset("hatexplain", split="train")
+                
             except Exception as e:
                 print(f"Warning: Failed to load ML models: {e}")
                 self.nsfw_classifier = None
                 self.text_classifier = None
+                self.hate_sonar = None
+                self.nude_detector = None
         
         # Initialize keyword blacklist
         self.keyword_blacklist = KeywordBlacklist()
