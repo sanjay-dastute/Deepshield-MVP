@@ -17,7 +17,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Set environment variable for API URL
-ENV REACT_APP_API_URL=http://localhost:8000
+ENV VITE_API_URL=http://localhost:8000
 
 # Build the application
 RUN pnpm build
@@ -31,10 +31,10 @@ WORKDIR /app
 RUN npm install -g serve
 
 # Copy built files from builder stage
-COPY --from=builder /app/build ./build
+COPY --from=builder /app/dist ./dist
 
 # Expose port
 EXPOSE 3000
 
 # Start the application
-CMD ["serve", "-s", "build", "-l", "3000"]
+CMD ["serve", "-s", "dist", "-l", "3000"]
