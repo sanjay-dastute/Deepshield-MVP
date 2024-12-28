@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from .db.mongodb import connect_to_mongo, close_mongo_connection
-from .api.endpoints import users, content, ai
+from .api.endpoints import users, content, ai, notifications
+from .services.api.instagram import router as instagram_router
 
 
 app = FastAPI(title="DeepShield API")
@@ -20,9 +21,11 @@ app.add_middleware(
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Include routers
-app.include_router(users.router, prefix="/api/users", tags=["users"])
-app.include_router(content.router, prefix="/api/content", tags=["content"])
-app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
+app.include_router(content.router, prefix="/api/v1/content", tags=["content"])
+app.include_router(ai.router, prefix="/api/v1/ai", tags=["ai"])
+app.include_router(instagram_router, prefix="/api/v1/instagram", tags=["instagram"])
+app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
 
 @app.on_event("startup")
 async def startup_db_client():

@@ -3,8 +3,12 @@ import numpy as np
 import cv2
 from typing import Dict, Any
 from transformers import pipeline
-from ..api.translation import TranslationAPI
 from .keyword_blacklist import KeywordBlacklist
+
+# Lazy import to avoid circular dependency
+def get_translation_api():
+    from ..api.translation import TranslationAPI
+    return TranslationAPI()
 
 # Mock toxic content for testing
 MOCK_TOXIC_CONTENT = {
@@ -31,7 +35,11 @@ class ContentModerator:
         """
         self.test_mode = test_mode
         
-        if not test_mode:
+        if test_mode:
+            # Mock classifiers for testing
+            self.nsfw_classifier = lambda x: [{'label': 'nsfw', 'score': 0.9}]
+            self.text_classifier = lambda x: [{'label': 'toxic', 'score': 0.9}]
+        else:
             try:
                 # Initialize NSFW content detection
                 self.nsfw_classifier = pipeline(
@@ -51,9 +59,9 @@ class ContentModerator:
                 self.nsfw_classifier = None
                 self.text_classifier = None
         
-        # Initialize translation service and keyword blacklist
-        self.translation_api = TranslationAPI()
+        # Initialize keyword blacklist
         self.keyword_blacklist = KeywordBlacklist()
+        self._translation_api = None
     
     async def analyze_image(self, image_path: str) -> Dict[str, Any]:
         """Analyze image for explicit content"""
@@ -82,7 +90,9 @@ class ContentModerator:
         try:
             # Detect language if not provided
             if not language:
-                lang_result = await self.translation_api.detect_language(text)
+                if not self._translation_api:
+                    self._translation_api = get_translation_api()
+                lang_result = await self._translation_api.detect_language(text)
                 if lang_result["success"]:
                     language = lang_result["language"]
                 else:
@@ -99,7 +109,9 @@ class ContentModerator:
             # Translate text to English if not already in English and not already toxic
             translated_text = text
             if not is_toxic and language != "en":
-                translation_result = await self.translation_api.translate_text(text, "en", language)
+                if not self._translation_api:
+                    self._translation_api = get_translation_api()
+                translation_result = await self._translation_api.translate_text(text, "en", language)
                 if translation_result["success"]:
                     translated_text = translation_result["translated_text"]
             
