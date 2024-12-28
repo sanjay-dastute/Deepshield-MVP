@@ -3,7 +3,15 @@ services:
   - type: web
     name: deepshield-backend
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      cd deepshield-backend
+      python -m pip install --upgrade pip
+      pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+      pip install -r requirements.txt
+      mkdir -p /opt/render/project/src/datasets
+      curl -L https://github.com/ondyari/FaceForensics/raw/master/dataset/FaceForensics++ -o /opt/render/project/src/datasets/faceforensics.zip
+      curl -L https://github.com/notAI-tech/NudeNet/raw/v2/dataset/nude.zip -o /opt/render/project/src/datasets/nudenet.zip
+      curl -L https://huggingface.co/datasets/hatexplain/raw/main/dataset.zip -o /opt/render/project/src/datasets/hatexplain.zip
     startCommand: cd deepshield-backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: MONGODB_URL
@@ -18,6 +26,12 @@ services:
         value: IGAAPzigKEbvNBZAE1pMG9uUTZAxR0NzSTRIdEE5SXNhc0hRMHVZAWWhsNjcxSzVUa2w1ZAHFyYmNoLVU3bXJvZA0N5YUdhWC1nN2V0WWtoSHJMS3ZAPTFB6am82SFZAwSG1uUXNJcU1hUDkxSFdVa2t4Tl9zbDNQcElTNGtkTmRVWkZADZAwZDZD
       - key: INSTAGRAM_ACCOUNT_ID
         value: 17841451799717870
+      - key: DATASET_DIR
+        value: /opt/render/project/src/datasets
+      - key: PYTORCH_ENABLE_MPS_FALLBACK
+        value: "1"
+      - key: TRANSFORMERS_CACHE
+        value: /opt/render/project/src/.cache/huggingface
 
   # Frontend Service
   - type: web
