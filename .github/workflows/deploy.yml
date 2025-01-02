@@ -36,12 +36,10 @@ jobs:
           mkdir -p /tmp/datasets
           echo "Setting up environment variables..."
           
-      - name: Deploy to Google Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v1
-        with:
-          service: deepshield-backend
-          source: ./deepshield-backend
-          region: us-central1
+      - name: Deploy backend
+        run: |
+          cd deepshield-backend
+          python -m uvicorn app.main:app --host 0.0.0.0 --port ${{ secrets.PORT || 8000 }} &
           
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -63,8 +61,7 @@ jobs:
           cd deepshield-frontend
           npm run build
           
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./deepshield-frontend/dist
+      - name: Deploy frontend
+        run: |
+          cd deepshield-frontend
+          npm run preview -- --host 0.0.0.0 --port ${{ secrets.PORT || 3000 }} &
