@@ -8,11 +8,11 @@ pydantic==2.5.2
 motor==3.3.1
 
 # AI and ML dependencies
-torch==2.1.1
+torch==2.2.0
 transformers==4.35.2
 facenet-pytorch==2.5.3
 deepface==0.0.79
-hatesonar==0.0.10
+hatesonar==0.0.7
 nudenet==2.0.9
 datasets==2.15.0
 

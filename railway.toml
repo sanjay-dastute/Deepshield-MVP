@@ -1,0 +1,19 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pip install -r requirements.txt"
+
+[deploy]
+startCommand = "cd deepshield-backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+
+[env]
+PYTHON_VERSION = "3.12.0"
+MONGODB_URL = "${{MONGODB_URL}}"
+JWT_SECRET = "${{JWT_SECRET}}"
+INSTAGRAM_APP_ID = "1112199003401971"
+INSTAGRAM_APP_SECRET = "33191e18dd0aa8db81049ee756d2f324"
+INSTAGRAM_ACCESS_TOKEN = "IGAAPzigKEbvNBZAE1pMG9uUTZAxR0NzSTRIdEE5SXNhc0hRMHVZAWWhsNjcxSzVUa2w1ZAHFyYmNoLVU3bXJvZA0N5YUdhWC1nN2V0WWtoSHJMS3ZAPTFB6am82SFZAwSG1uUXNJcU1hUDkxSFdVa2t4Tl9zbDNQcElTNGtkTmRVWkZADZAwZDZD"
+INSTAGRAM_ACCOUNT_ID = "17841451799717870"
+DATASET_DIR = "/tmp/datasets"

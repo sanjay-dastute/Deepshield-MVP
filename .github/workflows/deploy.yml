@@ -1,0 +1,70 @@
+name: Deploy DeepShield
+
+on:
+  push:
+    branches: [ main, devin/* ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          cd deepshield-backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Set up environment
+        env:
+          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          INSTAGRAM_APP_ID: ${{ secrets.INSTAGRAM_APP_ID }}
+          INSTAGRAM_APP_SECRET: ${{ secrets.INSTAGRAM_APP_SECRET }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
+          DATASET_DIR: "/tmp/datasets"
+        run: |
+          mkdir -p /tmp/datasets
+          echo "Setting up environment variables..."
+          
+      - name: Deploy to Google Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          service: deepshield-backend
+          source: ./deepshield-backend
+          region: us-central1
+          
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: |
+          cd deepshield-frontend
+          npm install
+          
+      - name: Build
+        run: |
+          cd deepshield-frontend
+          npm run build
+          
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./deepshield-frontend/dist

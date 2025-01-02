@@ -18,8 +18,10 @@ interface ContentFlag {
   createdAt: string;
 }
 
-const AdminPanel: React.FC = () => {
+export const AdminPanel: React.FC = () => {
   const { user } = useAuth();
+  // Use user object for admin verification
+  console.log("Admin user:", user);
   const [users, setUsers] = useState<User[]>([]);
   const [flags, setFlags] = useState<ContentFlag[]>([]);
   const [activeTab, setActiveTab] = useState<'users' | 'flags'>('users');
@@ -200,5 +202,3 @@ const AdminPanel: React.FC = () => {
     </div>
   );
 };
-
-export default AdminPanel;

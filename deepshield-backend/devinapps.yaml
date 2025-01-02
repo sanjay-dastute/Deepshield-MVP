@@ -1,0 +1,77 @@
+# DeepShield Backend Configuration
+name: deepshield-backend
+type: python
+framework: fastapi
+python_version: "3.12"
+entrypoint: app.main:app
+
+# Environment Variables
+env:
+  MONGODB_URL: ${MONGODB_URL}
+  MONGODB_DB: deepshield
+  JWT_SECRET: ${JWT_SECRET}
+  JWT_ALGORITHM: HS256
+  JWT_EXPIRE_MINUTES: 30
+  INSTAGRAM_APP_ID: "1112199003401971"
+  INSTAGRAM_APP_SECRET: "33191e18dd0aa8db81049ee756d2f324"
+  INSTAGRAM_ACCESS_TOKEN: "IGAAPzigKEbvNBZAE1pMG9uUTZAxR0NzSTRIdEE5SXNhc0hRMHVZAWWhsNjcxSzVUa2w1ZAHFyYmNoLVU3bXJvZA0N5YUdhWC1nN2V0WWtoSHJMS3ZAPTFB6am82SFZAwSG1uUXNJcU1hUDkxSFdVa2t4Tl9zbDNQcElTNGtkTmRVWkZADZAwZDZD"
+  INSTAGRAM_ACCOUNT_ID: "17841451799717870"
+  GOOGLE_CLOUD_PROJECT: deepshield-mvp
+  TRANSLATION_API_KEY: ${TRANSLATION_API_KEY}
+
+# Dependencies
+requirements:
+  - fastapi>=0.68.0
+  - uvicorn>=0.15.0
+  - python-multipart>=0.0.5
+  - python-jose[cryptography]>=3.3.0
+  - passlib[bcrypt]>=1.7.4
+  - motor>=2.5.1
+  - aiofiles>=0.7.0
+  - tensorflow>=2.7.0
+  - torch>=1.10.0
+  - transformers>=4.12.0
+  - pillow>=8.3.2
+  - numpy>=1.21.4
+  - scikit-learn>=0.24.2
+  - hatesonar>=0.0.4
+  - nsfwjs>=0.2.0
+  - facenet-pytorch>=2.5.2
+  - deepface>=0.0.75
+  - opencv-python-headless>=4.5.4.60
+  - datasets>=1.16.1
+
+# AI Model Configuration
+ai_models:
+  deepfake_detection:
+    model: "selimsef/dfdc_deepfake_challenge"
+    threshold: 0.7
+  content_moderation:
+    model: "unitary/multilingual-toxic-xlm-roberta"
+    threshold: 0.7
+  face_verification:
+    model: "vggface2"
+    threshold: 0.85
+
+# Dataset Configuration
+datasets:
+  - name: "FaceForensics++"
+    path: "/data/datasets/faceforensics"
+  - name: "NudeNet"
+    path: "/data/datasets/nudenet"
+  - name: "HateXplain"
+    path: "/data/datasets/hatexplain"
+
+# API Configuration
+api:
+  prefix: "/api/v1"
+  cors_origins: ["*"]
+  rate_limit: 100
+  timeout: 30
+
+# Health Check
+health_check:
+  path: "/healthz"
+  interval: 30
+  timeout: 10
+  retries: 3

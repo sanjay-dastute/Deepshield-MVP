@@ -13,7 +13,7 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-from .notifications import notify_content_flagged
+from ...services.notifications.content_notifications import notify_content_flagged
 
 @router.post("/upload", response_model=Content)
 async def upload_content(
