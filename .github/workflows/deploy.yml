@@ -23,23 +23,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Set up environment
-        env:
-          MONGODB_URL: ${{ secrets.MONGODB_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          INSTAGRAM_APP_ID: ${{ secrets.INSTAGRAM_APP_ID }}
-          INSTAGRAM_APP_SECRET: ${{ secrets.INSTAGRAM_APP_SECRET }}
-          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
-          INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
-          DATASET_DIR: "/tmp/datasets"
-        run: |
-          mkdir -p /tmp/datasets
-          echo "Setting up environment variables..."
-          
-      - name: Deploy backend
+      - name: Set up environment variables
         run: |
           cd deepshield-backend
-          python -m uvicorn app.main:app --host 0.0.0.0 --port ${{ secrets.PORT || 8000 }} &
+          mkdir -p /tmp/datasets
+          echo "MONGODB_URL=${{ secrets.MONGODB_URL }}" > .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "INSTAGRAM_APP_ID=${{ secrets.INSTAGRAM_APP_ID }}" >> .env
+          echo "INSTAGRAM_APP_SECRET=${{ secrets.INSTAGRAM_APP_SECRET }}" >> .env
+          echo "INSTAGRAM_ACCESS_TOKEN=${{ secrets.INSTAGRAM_ACCESS_TOKEN }}" >> .env
+          echo "INSTAGRAM_ACCOUNT_ID=${{ secrets.INSTAGRAM_ACCOUNT_ID }}" >> .env
+          echo "DATASET_DIR=/tmp/datasets" >> .env
+
+      - name: Deploy backend to fly.io
+        run: |
+          cd deepshield-backend
+          curl -X POST https://api.fly.io/v1/apps/app-nvondopb/deploy \
+            -H "Authorization: Bearer ${{ secrets.FLY_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"source": "."}'
           
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -61,7 +63,11 @@ jobs:
           cd deepshield-frontend
           npm run build
           
-      - name: Deploy frontend
+      - name: Deploy frontend to devinapps
         run: |
           cd deepshield-frontend
-          npm run preview -- --host 0.0.0.0 --port ${{ secrets.PORT || 3000 }} &
+          VITE_API_URL=https://app-nvondopb.fly.dev npm run build
+          curl -X POST https://api.devinapps.com/v1/deploy \
+            -H "Authorization: Bearer ${{ secrets.DEVINAPPS_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"dir": "dist", "url": "https://deepfake-detection-app-hr07qm6j.devinapps.com"}'
