@@ -35,13 +35,10 @@ jobs:
           echo "INSTAGRAM_ACCOUNT_ID=${{ secrets.INSTAGRAM_ACCOUNT_ID }}" >> .env
           echo "DATASET_DIR=/tmp/datasets" >> .env
 
-      - name: Deploy backend to fly.io
-        run: |
-          cd deepshield-backend
-          curl -X POST https://api.fly.io/v1/apps/app-nvondopb/deploy \
-            -H "Authorization: Bearer ${{ secrets.FLY_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{"source": "."}'
+      - name: Deploy backend
+        uses: devinapps/deploy-backend@v1
+        with:
+          directory: deepshield-backend
           
   deploy-frontend:
     runs-on: ubuntu-latest
@@ -58,16 +55,8 @@ jobs:
           cd deepshield-frontend
           npm install
           
-      - name: Build
-        run: |
-          cd deepshield-frontend
-          npm run build
-          
-      - name: Deploy frontend to devinapps
-        run: |
-          cd deepshield-frontend
-          VITE_API_URL=https://app-nvondopb.fly.dev npm run build
-          curl -X POST https://api.devinapps.com/v1/deploy \
-            -H "Authorization: Bearer ${{ secrets.DEVINAPPS_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{"dir": "dist", "url": "https://deepfake-detection-app-hr07qm6j.devinapps.com"}'
+      - name: Build and Deploy
+        uses: devinapps/deploy-frontend@v1
+        with:
+          directory: deepshield-frontend
+          api-url: https://app-nvondopb.fly.dev
