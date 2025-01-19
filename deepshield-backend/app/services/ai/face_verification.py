@@ -3,9 +3,16 @@ import torch
 from facenet_pytorch import MTCNN, InceptionResnetV1
 from PIL import Image
 import numpy as np
-from deepface import DeepFace
 import cv2
 from datasets import load_dataset
+
+# Try to import deepface, fallback to alternative implementation if not available
+try:
+    from deepface import DeepFace
+    DEEPFACE_AVAILABLE = True
+except ImportError:
+    print("DeepFace not available, using FaceNet only for face verification")
+    DEEPFACE_AVAILABLE = False
 
 class FaceVerifier:
     """Face verification using FaceNet and DeepFace models."""
@@ -79,12 +86,15 @@ class FaceVerifier:
             similarity = torch.nn.functional.cosine_similarity(embedding1, embedding2)
             similarity_score = float(similarity.item())
             
-            # Use DeepFace as secondary verification
-            try:
-                deepface_result = DeepFace.verify(image1_path, image2_path)
-                deepface_verified = deepface_result.get("verified", False)
-            except:
-                deepface_verified = None
+            # Use DeepFace as secondary verification if available
+            deepface_verified = None
+            if DEEPFACE_AVAILABLE:
+                try:
+                    deepface_result = DeepFace.verify(image1_path, image2_path)
+                    deepface_verified = deepface_result.get("verified", False)
+                except Exception as e:
+                    print(f"DeepFace verification failed: {e}")
+                    deepface_verified = None
             
             # Combine results
             verified = similarity_score > self.similarity_threshold
@@ -118,18 +128,27 @@ class FaceVerifier:
             
             # Add additional profile-specific checks
             if result["verified"]:
-                # Check for image manipulation using DeepFace
-                try:
-                    analysis = DeepFace.analyze(profile_image, actions=['emotion', 'age', 'gender'])
-                    result.update({
-                        "analysis": {
-                            "emotion": analysis[0].get("dominant_emotion"),
-                            "age": analysis[0].get("age"),
-                            "gender": analysis[0].get("gender")
-                        }
-                    })
-                except:
-                    pass
+                # Check for image manipulation using DeepFace if available
+                if DEEPFACE_AVAILABLE:
+                    try:
+                        analysis = DeepFace.analyze(profile_image, actions=['emotion', 'age', 'gender'])
+                        result.update({
+                            "analysis": {
+                                "emotion": analysis[0].get("dominant_emotion"),
+                                "age": analysis[0].get("age"),
+                                "gender": analysis[0].get("gender")
+                            }
+                        })
+                    except Exception as e:
+                        print(f"DeepFace analysis failed: {e}")
+                        # Fallback to basic analysis
+                        result.update({
+                            "analysis": {
+                                "emotion": None,
+                                "age": None,
+                                "gender": None
+                            }
+                        })
             
             return result
             
