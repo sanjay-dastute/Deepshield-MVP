@@ -1,0 +1,9 @@
+tensorflow-cpu==2.18.0
+torch==2.5.1
+torchvision==0.20.1
+transformers==4.47.1
+opencv-python-headless==4.10.0.84
+deepface==0.0.93
+scikit-learn==1.6.0
+numpy==1.26.4
+pillow==11.0.0
