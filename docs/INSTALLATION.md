@@ -1,16 +1,15 @@
 # DeepShield Installation Guide
 
-This guide provides comprehensive instructions for setting up DeepShield both locally and using Docker.
+This guide provides comprehensive instructions for setting up DeepShield locally.
 
 ## Table of Contents
 1. [Prerequisites](#prerequisites)
 2. [Directory Structure](#directory-structure)
 3. [Local Installation](#local-installation)
-4. [Docker Installation](#docker-installation)
-5. [Dataset Installation](#dataset-installation)
-6. [AI Model Setup](#ai-model-setup)
-7. [Environment Configuration](#environment-configuration)
-8. [Troubleshooting](#troubleshooting)
+4. [Dataset Installation](#dataset-installation)
+5. [AI Model Setup](#ai-model-setup)
+6. [Environment Configuration](#environment-configuration)
+7. [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
@@ -24,7 +23,6 @@ This guide provides comprehensive instructions for setting up DeepShield both lo
 - Python 3.12+
 - Node.js 20+
 - MongoDB 7.0+
-- Docker & Docker Compose (for Docker installation)
 - Git
 
 ## Directory Structure
@@ -85,28 +83,6 @@ cd ../deepshield-frontend
 pnpm install  # or npm install
 cp .env.example .env
 # Edit .env with your configuration
-```
-
-## Docker Installation
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/sanjay-dastute/Deepshield-MVP.git
-cd Deepshield-MVP
-```
-
-### 2. Configure Environment
-```bash
-# Copy example environment files
-cp deepshield-backend/.env.example deepshield-backend/.env
-cp deepshield-frontend/.env.example deepshield-frontend/.env
-
-# Edit the .env files with your configuration
-```
-
-### 3. Build and Run with Docker Compose
-```bash
-docker compose up --build
 ```
 
 ## Dataset Installation
@@ -197,11 +173,6 @@ cd deepshield-frontend
 pnpm dev  # or npm run dev
 ```
 
-### Docker Development
-```bash
-docker compose up
-```
-
 Access the application:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
@@ -226,9 +197,6 @@ Access the application:
    - Check MONGODB_URI in .env
    - Ensure MongoDB port (27017) is not blocked
 
-4. **Docker Build Failures**
-   - Ensure Docker has sufficient resources
-   - Check Docker daemon is running
-   - Verify Docker Compose file syntax
+
 
 For more detailed troubleshooting, refer to [Troubleshooting.md](./Troubleshooting.md).

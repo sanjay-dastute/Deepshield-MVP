@@ -2,7 +2,7 @@
 from pathlib import Path
 import os
 
-# Base directory for datasets (using /tmp for Render deployment)
+# Base directory for datasets
 DATASET_DIR = Path("/tmp/datasets")
 
 # Dataset configurations

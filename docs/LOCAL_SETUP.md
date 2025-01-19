@@ -1,6 +1,6 @@
 # DeepShield Local System Setup Guide
 
-This guide provides detailed instructions for setting up DeepShield on your local system without Docker.
+This guide provides detailed instructions for setting up DeepShield on your local system.
 
 ## Directory Structure Setup
 
