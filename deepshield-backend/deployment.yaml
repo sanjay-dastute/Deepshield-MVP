@@ -1,0 +1,95 @@
+name: deepshield-backend
+env:
+  PYTHON_VERSION: "3.12.7"
+  MONGODB_URL: ${MONGODB_URL}
+  JWT_SECRET: ${JWT_SECRET}
+  INSTAGRAM_APP_ID: ${INSTAGRAM_APP_ID}
+  INSTAGRAM_APP_SECRET: ${INSTAGRAM_APP_SECRET}
+  INSTAGRAM_ACCESS_TOKEN: ${INSTAGRAM_ACCESS_TOKEN}
+  INSTAGRAM_ACCOUNT_ID: ${INSTAGRAM_ACCOUNT_ID}
+  GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT}
+  GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
+  TRANSLATION_API_KEY: ${TRANSLATION_API_KEY}
+  AI_MODELS_PATH: "/app/models"
+  DATASET_PATH: "/app/datasets"
+  TRANSFORMERS_CACHE: "/app/models/transformers"
+  TORCH_HOME: "/app/models/torch"
+  HF_HOME: "/app/models/huggingface"
+  USE_MOCK_AI: "false"
+  USE_CPU_ONLY: "true"
+
+build:
+  dockerfile: Dockerfile
+  context: .
+
+
+services:
+  - name: web
+    port: 8000
+    env:
+      - name: PORT
+        value: "8000"
+    resources:
+      memory: 2Gi
+      cpu: 1
+    env_file:
+      - .env
+    volumes:
+      - name: models
+        mountPath: /app/models
+      - name: datasets
+        mountPath: /app/datasets
+      - name: credentials
+        mountPath: /app/credentials
+
+volumes:
+  - name: models
+    mountPath: /app/models
+    size: 10Gi
+    persistent: true
+  - name: datasets
+    mountPath: /app/datasets
+    size: 5Gi
+    persistent: true
+  - name: credentials
+    mountPath: /app/credentials
+    size: 1Gi
+    persistent: true
+
+dependencies:
+  python:
+    - transformers==4.36.2
+    - torch==2.1.2
+    - tensorflow-cpu==2.15.0
+    - facenet-pytorch==2.5.3
+    - deepface==0.0.79
+    - hatesonar==0.0.6
+    - datasets==2.16.1
+    - pillow==10.2.0
+    - opencv-python-headless==4.9.0.80
+    - numpy==1.26.3
+
+datasets:
+  - name: faceforensics
+    source: ondyari/faceforensics
+    split: train[:100]
+    path: ${DATASET_PATH}/faceforensics
+  - name: hatexplain
+    source: hatexplain
+    split: train
+    path: ${DATASET_PATH}/hatexplain
+  - name: nudenet
+    source: private/nudenet
+    split: validation
+    path: ${DATASET_PATH}/nudenet
+
+models:
+  - name: deepfake_detector
+    source: selimsef/dfdc_deepfake_challenge
+    path: ${AI_MODELS_PATH}/deepfake
+  - name: toxicity_detector
+    source: unitary/toxic-bert
+    path: ${AI_MODELS_PATH}/toxicity
+  - name: nsfw_detector
+    source: falconsai/nsfw_image_detection
+    path: ${AI_MODELS_PATH}/nsfw
