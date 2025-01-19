@@ -1,13 +1,27 @@
-from deepface import DeepFace
 import numpy as np
 import cv2
 from typing import Dict, Any
 from transformers import pipeline
-from hatesonar import Sonar
 from nudenet import NudeDetector
 from .keyword_blacklist import KeywordBlacklist
 import torch
 from datasets import load_dataset
+
+# Try to import deepface, fallback to alternative implementation if not available
+try:
+    from deepface import DeepFace
+    DEEPFACE_AVAILABLE = True
+except ImportError:
+    print("DeepFace not available, using alternative implementation")
+    DEEPFACE_AVAILABLE = False
+
+# Try to import hatesonar, fallback to transformers pipeline if not available
+try:
+    from hatesonar import Sonar
+    HATESONAR_AVAILABLE = True
+except ImportError:
+    print("HateSonar not available, using transformers pipeline for toxicity detection")
+    HATESONAR_AVAILABLE = False
 
 # Lazy import to avoid circular dependency
 def get_translation_api():
@@ -64,11 +78,24 @@ class ContentModerator:
                     device=-1  # CPU
                 )
                 
-                # Initialize HateSonar for additional hate speech detection
-                self.hate_sonar = Sonar()
+                # Initialize hate speech detection
+                if HATESONAR_AVAILABLE:
+                    self.hate_sonar = Sonar()
+                else:
+                    self.hate_sonar = None
+                    # Use transformers pipeline as fallback
+                    self.hate_classifier = pipeline(
+                        "text-classification",
+                        model="unitary/toxic-bert",
+                        device=-1  # CPU
+                    )
                 
                 # Load HateXplain dataset for improved detection
-                self.hate_dataset = load_dataset("hatexplain", split="train")
+                try:
+                    self.hate_dataset = load_dataset("hatexplain", split="train")
+                except Exception as e:
+                    print(f"Warning: Failed to load HateXplain dataset: {e}")
+                    self.hate_dataset = None
                 
             except Exception as e:
                 print(f"Warning: Failed to load ML models: {e}")
