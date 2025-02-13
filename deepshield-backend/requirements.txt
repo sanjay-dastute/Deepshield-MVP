@@ -9,7 +9,7 @@ motor==3.3.1
 
 # AI and ML dependencies
 torch==2.2.0
-transformers==4.38.0
+transformers==4.48.0
 facenet-pytorch==2.5.3
 deepface==0.0.79
 hatesonar==0.0.7
